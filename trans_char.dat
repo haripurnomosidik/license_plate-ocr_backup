@@ -1,0 +1,74 @@
+import cv2
+from matplotlib import pyplot as plt
+import imutils
+import pandas as pd
+import numpy as np
+import pytesseract
+import fastwer
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+with open ('plat.txt', 'r') as plat:
+    plates = plat.readlines()
+
+def ocr(img, oem, psm):
+    configuration = (f"--oem {oem} --psm {psm}")
+    text = pytesseract.image_to_string(img, config=configuration)
+    return text
+
+for i in range(len(plates)):
+    plates[i] = plates[i].replace('\n', '')
+    plates[i] = plates[i].replace(' ', '')
+
+op36 = []
+op37 = []
+op38 = []
+op39 = []
+
+cer36 = []
+cer37 = []
+cer38 = []
+cer39 = []
+
+for n_plate in plates:
+    img = cv2.imread(f'dataset/result/0{n_plate}.jpg')
+    
+    txt = ocr(img, 3, 6)
+    txt = txt.splitlines()[0].replace(' ', '')
+    cer36.append(fastwer.score_sent(txt, n_plate ,char_level=True))
+    op36.append(txt)
+    
+    txt = ocr(img, 3, 7)
+    txt = txt.splitlines()[0].replace(' ', '')
+    cer37.append(fastwer.score_sent(txt, n_plate ,char_level=True))
+    op37.append(txt)
+
+    txt = ocr(img, 3, 8)
+    txt = txt.splitlines()[0].replace(' ', '')
+    cer38.append(fastwer.score_sent(txt, n_plate ,char_level=True))
+    op38.append(txt)
+
+    txt = ocr(img, 3, 9)
+    txt = txt.splitlines()[0].replace(' ', '')
+    cer39.append(fastwer.score_sent(txt, n_plate ,char_level=True))
+    op39.append(txt)
+
+# print(cer36)   
+# print(op36)
+plates_cer = pd.DataFrame({
+    'original' : plates,
+    'op36' : op36,
+    'cer36' : cer36,
+    'op37' : op37,
+    'cer37' : cer37,
+    'op38' : op38,
+    'cer38' : cer38,
+    'op39' : op39,
+    'cer39' : cer39
+})
+plates_cer.to_excel('plates_cer.xlsx')
+    
+    # print(f'tesseract =  {tsr.splitlines()[0]}')
+    # print(f'ml =  {ml.splitlines()[0]}')
+    # cv2.imshow('app', img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindo
